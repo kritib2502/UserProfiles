@@ -27,6 +27,13 @@ export async function getUserWithEmail(email) {
   )
   return results[0]
 }
+export async function getUserById(userId) {
+  const [results] = await pool.query(
+    `SELECT * FROM users WHERE id = ?`,
+    [userId]
+  )
+  return results[0]
+}
 
 export async function updateUserDisplayName(id, displayName) {
   const [results] = await pool.query(
@@ -39,5 +46,6 @@ export async function updateUserDisplayName(id, displayName) {
 export default{
   createUser,
   getUserWithEmail,
+  getUserById,
   updateUserDisplayName
 }

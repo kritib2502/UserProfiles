@@ -37,9 +37,10 @@ app.post("/api/login", async(req, res) => {
     displayName: user.displayName
   });
 
+  console.log(accessToken)
 
   // res.send({status: "ok",userId:user.id})
-  res.send({status: "ok",token:accessToken})
+  res.send({status: "ok",userId:accessToken})
 })
 
 app.post("/api/signup", async (req, res) => {
@@ -57,11 +58,23 @@ app.post("/api/signup", async (req, res) => {
   console.log(salt, hashedPassword)
 
   
- const result = await database.createUser({email,password: hashedPassword,displayName})
-  res.send({status: "ok"})
+ const user = await database.createUser({email,password: hashedPassword,displayName})
+
+ const userInfo = {
+  sub: user.id,
+  email: user.email,
+  displayName: user.displayName
+};
+const token = jwt.generateToken(userInfo);
+
+return res.send({ 
+  message: "Sign Up Successful. Log in to continue!",
+  userId:token
+});
+
 })
 
-app.put("/api/users/displayName", authorize,async(req, res) => {
+app.put("/api/users/:id/displayName", authorize,async(req, res) => {
 
 
   //grab jwt
@@ -73,8 +86,24 @@ app.put("/api/users/displayName", authorize,async(req, res) => {
 
   await database.updateUserDisplayName(userId,displayName);
 
+  
+  // const user = await database.updateUserDisplayName(userId, displayName);
+
+
+  const getUser = await database.getUserById(userId);
+  
+  const userInfo = {
+      sub: getUser.id,
+      email: getUser.email,
+      displayName: getUser.displayName,
+  };
+  const token = jwt.generateToken(userInfo);
   console.log("update displayName", displayName)
-  res.send({status: "ok"})
+  return res.send({ 
+    status:"Ok!",
+    userId:token
+  });
+  
 })
 
 app.put("/api/users/:id/profileImage", (req, res) => {
